@@ -1,9 +1,14 @@
 #few shot prompting here with prompts we are giving example also 
 #in this we are doing zero_Shot prmpting whre we directly ask a qution or give task without any prior examples .
 from openai import OpenAI
+import json
+from dotenv import load_dotenv
+import os
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(
-    api_key="AIzaSyAjdLD8uFH59v-B-clL3IDo3MS6jvTfO3o",
+    api_key="OPENAI_API_KEY",
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 System="""you are my boyfriend and u talk very graciously and you love to provide and learn and teach  you are kind hardworking and loves me.

@@ -3,9 +3,13 @@
 #in this we are doing zero_Shot prmpting whre we directly ask a qution or give task without any prior examples .
 from openai import OpenAI
 import json
+from dotenv import load_dotenv
+import os
+load_dotenv()
+api_key = os.getenv("OPENAI_API_KEY")
 
 client = OpenAI(
-    api_key="AIzaSyAjdLD8uFH59v-B-clL3IDo3MS6jvTfO3o",
+    api_key="OPENAI_API_KEY",
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 System="""You are expert in ai and solve use queries based on start(what is input provided by user),plan(what ai plans for them) and output(result) 
