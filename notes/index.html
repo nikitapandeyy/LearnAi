@@ -1,0 +1,1745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LearnAI — Pydantic Notes | Nikita</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg2: #111118;
+    --bg3: #1a1a24;
+    --bg4: #22222e;
+    --border: rgba(255,255,255,0.07);
+    --border2: rgba(255,255,255,0.12);
+    --text: #e8e8f0;
+    --text2: #9090a8;
+    --text3: #5a5a72;
+    --accent: #7c6af7;
+    --accent2: #a390ff;
+    --accent-bg: rgba(124,106,247,0.12);
+    --green: #3ddfa0;
+    --green-bg: rgba(61,223,160,0.1);
+    --amber: #f5a623;
+    --amber-bg: rgba(245,166,35,0.1);
+    --red: #ff6b6b;
+    --red-bg: rgba(255,107,107,0.1);
+    --blue: #5ab4f7;
+    --blue-bg: rgba(90,180,247,0.1);
+    --mono: 'JetBrains Mono', monospace;
+    --display: 'Syne', sans-serif;
+    --body: 'Inter', sans-serif;
+    --radius: 10px;
+    --radius-lg: 16px;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: var(--body);
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    line-height: 1.7;
+  }
+
+  /* ── SIDEBAR ── */
+  .sidebar {
+    position: fixed;
+    left: 0; top: 0; bottom: 0;
+    width: 260px;
+    background: var(--bg2);
+    border-right: 1px solid var(--border);
+    padding: 0;
+    overflow-y: auto;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .sidebar-brand {
+    padding: 24px 20px 20px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .brand-tag {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  .brand-title {
+    font-family: var(--display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.2;
+  }
+
+  .brand-sub {
+    font-size: 12px;
+    color: var(--text3);
+    margin-top: 4px;
+    font-family: var(--mono);
+  }
+
+  .sidebar-section-label {
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text3);
+    padding: 16px 20px 6px;
+  }
+
+  .sidebar-nav {
+    padding: 4px 12px;
+  }
+
+  .nav-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 9px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    color: var(--text2);
+    font-size: 13.5px;
+    font-weight: 400;
+    text-decoration: none;
+    border: none;
+    background: none;
+    width: 100%;
+    text-align: left;
+  }
+
+  .nav-item:hover {
+    background: var(--accent-bg);
+    color: var(--accent2);
+  }
+
+  .nav-item.active {
+    background: var(--accent-bg);
+    color: var(--accent2);
+    font-weight: 500;
+  }
+
+  .nav-item .nav-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    min-width: 18px;
+  }
+
+  .nav-item.active .nav-num { color: var(--accent); }
+
+  .progress-bar-wrap {
+    padding: 16px 20px 20px;
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 8px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--bg4);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+    transition: width 0.4s ease;
+  }
+
+  /* ── MAIN ── */
+  .main {
+    margin-left: 260px;
+    min-height: 100vh;
+  }
+
+  /* ── TOP BAR ── */
+  .topbar {
+    position: sticky;
+    top: 0;
+    background: rgba(10,10,15,0.85);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--border);
+    padding: 12px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    z-index: 50;
+  }
+
+  .topbar-breadcrumb {
+    font-size: 13px;
+    color: var(--text3);
+    font-family: var(--mono);
+  }
+
+  .topbar-breadcrumb span { color: var(--accent2); }
+
+  .topbar-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn-sm {
+    padding: 6px 14px;
+    border-radius: 6px;
+    border: 1px solid var(--border2);
+    background: var(--bg3);
+    color: var(--text2);
+    font-size: 12px;
+    font-family: var(--body);
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-sm:hover { background: var(--bg4); color: var(--text); border-color: var(--accent); }
+  .btn-sm.active { background: var(--accent-bg); color: var(--accent2); border-color: var(--accent); }
+
+  /* ── CONTENT ── */
+  .content {
+    padding: 48px 40px 80px;
+    max-width: 900px;
+  }
+
+  /* ── TOPIC CARD (section) ── */
+  .topic {
+    display: none;
+    animation: fadeUp 0.3s ease;
+  }
+
+  .topic.active { display: block; }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .topic-hero {
+    margin-bottom: 40px;
+  }
+
+  .topic-tag {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-bg);
+    padding: 4px 12px;
+    border-radius: 99px;
+    margin-bottom: 14px;
+    font-family: var(--mono);
+  }
+
+  .topic-title {
+    font-family: var(--display);
+    font-size: 36px;
+    font-weight: 800;
+    color: var(--text);
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+
+  .topic-subtitle {
+    font-size: 16px;
+    color: var(--text2);
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  /* ── SECTION CARD ── */
+  .section-card {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 20px;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+
+  .section-card:hover { border-color: var(--border2); }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 22px;
+    cursor: pointer;
+    user-select: none;
+  }
+
+  .section-header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+
+  .icon-purple { background: var(--accent-bg); }
+  .icon-green  { background: var(--green-bg); }
+  .icon-amber  { background: var(--amber-bg); }
+  .icon-red    { background: var(--red-bg); }
+  .icon-blue   { background: var(--blue-bg); }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--text);
+    font-family: var(--display);
+  }
+
+  .section-badge {
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--text3);
+    background: var(--bg4);
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-family: var(--mono);
+    margin-left: 8px;
+  }
+
+  .section-toggle {
+    font-size: 18px;
+    color: var(--text3);
+    transition: transform 0.2s;
+  }
+
+  .section-card.open .section-toggle { transform: rotate(180deg); }
+
+  .section-body {
+    display: none;
+    padding: 0 22px 22px;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-card.open .section-body { display: block; }
+
+  /* ── CONTENT ELEMENTS ── */
+  .prose { font-size: 14.5px; color: var(--text2); line-height: 1.8; }
+  .prose p { margin-top: 12px; }
+  .prose strong { color: var(--text); font-weight: 500; }
+
+  h3.sub {
+    font-family: var(--display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text);
+    margin: 24px 0 10px;
+  }
+
+  h4.mini {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--accent2);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin: 20px 0 8px;
+    font-family: var(--mono);
+  }
+
+  /* ── CODE BLOCK ── */
+  .code-wrap {
+    position: relative;
+    margin: 14px 0;
+    border-radius: var(--radius);
+    overflow: hidden;
+    border: 1px solid var(--border);
+  }
+
+  .code-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 14px;
+    background: var(--bg4);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .code-lang {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+
+  .code-copy {
+    font-size: 11px;
+    color: var(--text3);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-family: var(--mono);
+    transition: all 0.15s;
+  }
+
+  .code-copy:hover { background: var(--bg3); color: var(--accent2); }
+
+  pre {
+    padding: 16px;
+    background: var(--bg3);
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.65;
+    font-family: var(--mono);
+  }
+
+  code { font-family: var(--mono); font-size: 13px; }
+
+  .inline-code {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    padding: 1px 7px;
+    border-radius: 5px;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--accent2);
+  }
+
+  /* ── CALLOUTS ── */
+  .callout {
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    margin: 14px 0;
+    font-size: 13.5px;
+    line-height: 1.7;
+  }
+
+  .callout-title {
+    font-weight: 600;
+    margin-bottom: 4px;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    font-family: var(--mono);
+  }
+
+  .note   { background: var(--blue-bg);   border-left: 3px solid var(--blue);   color: var(--text2); }
+  .tip    { background: var(--green-bg);  border-left: 3px solid var(--green);  color: var(--text2); }
+  .warn   { background: var(--amber-bg);  border-left: 3px solid var(--amber);  color: var(--text2); }
+  .danger { background: var(--red-bg);    border-left: 3px solid var(--red);    color: var(--text2); }
+  .info   { background: var(--accent-bg); border-left: 3px solid var(--accent); color: var(--text2); }
+
+  .note   .callout-title { color: var(--blue); }
+  .tip    .callout-title { color: var(--green); }
+  .warn   .callout-title { color: var(--amber); }
+  .danger .callout-title { color: var(--red); }
+  .info   .callout-title { color: var(--accent2); }
+
+  /* ── FLOW DIAGRAM ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin: 14px 0;
+    font-family: var(--mono);
+    font-size: 13px;
+  }
+
+  .flow-step {
+    background: var(--bg4);
+    border: 1px solid var(--border2);
+    padding: 6px 14px;
+    border-radius: 6px;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .flow-arrow { color: var(--accent); font-size: 16px; }
+
+  /* ── TABLE ── */
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    margin: 14px 0;
+  }
+
+  .data-table th {
+    text-align: left;
+    padding: 9px 14px;
+    background: var(--bg4);
+    color: var(--accent2);
+    font-family: var(--mono);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    border-bottom: 1px solid var(--border);
+    font-weight: 600;
+  }
+
+  .data-table td {
+    padding: 9px 14px;
+    border-bottom: 1px solid var(--border);
+    color: var(--text2);
+    vertical-align: top;
+  }
+
+  .data-table tr:last-child td { border-bottom: none; }
+  .data-table tr:hover td { background: var(--bg3); }
+
+  .data-table td code {
+    color: var(--green);
+    background: var(--green-bg);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12px;
+  }
+
+  /* ── BADGES ── */
+  .badge {
+    display: inline-block;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-family: var(--mono);
+    margin-right: 4px;
+  }
+
+  .badge-purple { background: var(--accent-bg); color: var(--accent2); }
+  .badge-green  { background: var(--green-bg);  color: var(--green); }
+  .badge-amber  { background: var(--amber-bg);  color: var(--amber); }
+  .badge-red    { background: var(--red-bg);    color: var(--red); }
+
+  /* ── HIGHLIGHT TOKENS ── */
+  .t-kw  { color: #c792ea; }
+  .t-fn  { color: #82aaff; }
+  .t-str { color: #c3e88d; }
+  .t-num { color: #f78c6c; }
+  .t-cls { color: #ffcb6b; }
+  .t-cm  { color: #546e7a; font-style: italic; }
+  .t-op  { color: var(--accent2); }
+  .t-dec { color: var(--amber); }
+
+  /* ── INTERVIEW BOX ── */
+  .interview-box {
+    border: 1px solid var(--accent);
+    border-radius: var(--radius);
+    padding: 16px 20px;
+    background: var(--accent-bg);
+    margin: 14px 0;
+  }
+
+  .interview-box-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .interview-box ul {
+    padding-left: 16px;
+    font-size: 13.5px;
+    color: var(--text2);
+    line-height: 1.8;
+  }
+
+  .interview-box li { margin-bottom: 4px; }
+
+  /* ── QUICK RECALL ── */
+  .recall-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin: 14px 0;
+  }
+
+  .recall-item {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    font-size: 13px;
+  }
+
+  .recall-item-label {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text3);
+    margin-bottom: 3px;
+  }
+
+  .recall-item-val { color: var(--text); font-weight: 500; }
+
+  /* ── SUMMARY STRIP ── */
+  .summary-strip {
+    border-top: 1px solid var(--border);
+    margin-top: 24px;
+    padding-top: 18px;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .summary-pill {
+    background: var(--bg4);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 12.5px;
+    color: var(--text2);
+  }
+
+  .summary-pill strong { color: var(--accent2); }
+
+  /* ── SYNTAX HIGHLIGHT for pre ── */
+  pre .kw  { color: #c792ea; }
+  pre .fn  { color: #82aaff; }
+  pre .str { color: #c3e88d; }
+  pre .num { color: #f78c6c; }
+  pre .cls { color: #ffcb6b; }
+  pre .cm  { color: #546e7a; font-style: italic; }
+  pre .dec { color: #f5a623; }
+
+  /* ── MOBILE TOGGLE ── */
+  .mobile-toggle {
+    display: none;
+    position: fixed;
+    bottom: 20px; right: 20px;
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: white;
+    border: none;
+    font-size: 20px;
+    cursor: pointer;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 20px rgba(124,106,247,0.4);
+  }
+
+  @media (max-width: 768px) {
+    .sidebar { transform: translateX(-100%); transition: transform 0.3s; }
+    .sidebar.open { transform: translateX(0); }
+    .main { margin-left: 0; }
+    .content { padding: 32px 20px 60px; }
+    .topbar { padding: 12px 20px; }
+    .mobile-toggle { display: flex; }
+    .recall-grid { grid-template-columns: 1fr; }
+    .topic-title { font-size: 26px; }
+  }
+
+  /* ── SCROLL ── */
+  ::-webkit-scrollbar { width: 5px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--bg4); border-radius: 99px; }
+
+  /* ── PYTHON SYNTAX helpers (applied via JS) ── */
+  .tok-keyword { color: #c792ea; }
+  .tok-builtin { color: #82aaff; }
+  .tok-string  { color: #c3e88d; }
+  .tok-number  { color: #f78c6c; }
+  .tok-comment { color: #546e7a; font-style: italic; }
+  .tok-class   { color: #ffcb6b; }
+  .tok-decorator { color: #f5a623; }
+  .tok-punct   { color: #89ddff; }
+</style>
+</head>
+<body>
+
+<!-- SIDEBAR -->
+<nav class="sidebar" id="sidebar">
+  <div class="sidebar-brand">
+    <div class="brand-tag">Nikita's Notes</div>
+    <div class="brand-title">LearnAI</div>
+    <div class="brand-sub">python / pydantic</div>
+  </div>
+
+  <div class="sidebar-section-label">Topics</div>
+  <div class="sidebar-nav">
+    <button class="nav-item active" onclick="showTopic(0, this)">
+      <span class="nav-num">01</span> Pydantic Basics
+    </button>
+    <button class="nav-item" onclick="showTopic(1, this)">
+      <span class="nav-num">02</span> Fields &amp; Types
+    </button>
+    <button class="nav-item" onclick="showTopic(2, this)">
+      <span class="nav-num">03</span> Field() Constraints
+    </button>
+    <button class="nav-item" onclick="showTopic(3, this)">
+      <span class="nav-num">04</span> Validators
+    </button>
+    <button class="nav-item" onclick="showTopic(4, this)">
+      <span class="nav-num">05</span> Computed Fields
+    </button>
+    <button class="nav-item" onclick="showTopic(5, this)">
+      <span class="nav-num">06</span> Nested Models
+    </button>
+    <button class="nav-item" onclick="showTopic(6, this)">
+      <span class="nav-num">07</span> Self-Referencing
+    </button>
+    <button class="nav-item" onclick="showTopic(7, this)">
+      <span class="nav-num">08</span> Serialization
+    </button>
+  </div>
+
+  <div class="progress-bar-wrap">
+    <div class="progress-label">
+      <span>Progress</span>
+      <span id="prog-label">1 / 8</span>
+    </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="prog-fill" style="width: 12.5%"></div>
+    </div>
+  </div>
+</nav>
+
+<!-- MOBILE TOGGLE -->
+<button class="mobile-toggle" onclick="document.getElementById('sidebar').classList.toggle('open')">☰</button>
+
+<!-- MAIN -->
+<div class="main">
+  <div class="topbar">
+    <div class="topbar-breadcrumb">learnai / <span id="breadcrumb">pydantic-basics</span></div>
+    <div class="topbar-actions">
+      <button class="btn-sm" id="btn-collapse-all" onclick="collapseAll()">Collapse all</button>
+      <button class="btn-sm" id="btn-expand-all" onclick="expandAll()">Expand all</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 0 — PYDANTIC BASICS
+═══════════════════════════════════════════════════════ -->
+<div class="topic active" id="topic-0">
+  <div class="topic-hero">
+    <div class="topic-tag">01 — Foundation</div>
+    <div class="topic-title">Pydantic Basics</div>
+    <div class="topic-subtitle">The complete guide to Python's most powerful data validation library — what it is, why it matters, and how it works internally.</div>
+  </div>
+
+  <!-- WHAT IS IT -->
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">🧩</div>
+        <div class="section-title">What is Pydantic?</div>
+        <span class="section-badge">foundation</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="prose">
+        <p>Pydantic is a Python library that uses <strong>type hints</strong> to validate, parse, and serialize data automatically. Think of it as a smart gatekeeper — before data enters your system, Pydantic checks it, converts it, and raises errors if anything is wrong.</p>
+        <p>Before Pydantic, developers wrote manual checks like <span class="inline-code">if not isinstance(data['id'], int): raise ValueError(...)</span>. Pydantic eliminates all of that.</p>
+      </div>
+      <div class="callout tip">
+        <div class="callout-title">💡 Real-World Analogy</div>
+        Pydantic is like a strict hotel receptionist. You must fill out the check-in form correctly — name (string), room number (int), check-in date (date). Wrong type? The receptionist converts it or rejects it. You can't sneak in bad data.
+      </div>
+    </div>
+  </div>
+
+  <!-- HOW IT WORKS -->
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-green">⚙️</div>
+        <div class="section-title">Step-by-Step Execution Flow</div>
+        <span class="section-badge">internal</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>
+
+<span class="kw">class</span> <span class="cls">User</span>(<span class="cls">BaseModel</span>):
+    id: <span class="cls">int</span>
+    name: <span class="cls">str</span>
+    is_active: <span class="cls">bool</span> = <span class="kw">False</span>   <span class="cm"># default value</span>
+
+input_data = {<span class="str">"id"</span>: <span class="num">10</span>, <span class="str">"name"</span>: <span class="str">"nikita"</span>, <span class="str">"is_active"</span>: <span class="kw">True</span>}
+user = <span class="cls">User</span>(**input_data)
+
+<span class="fn">print</span>(user)
+<span class="cm"># Output: id=10 name='nikita' is_active=True</span></pre>
+      </div>
+
+      <h4 class="mini">What happens internally — step by step</h4>
+      <div class="flow">
+        <div class="flow-step">Input dict</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">**unpacking</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Type checking</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Type coercion</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Object created ✓</div>
+      </div>
+
+      <table class="data-table" style="margin-top:14px">
+        <tr><th>Step</th><th>What Pydantic Does</th></tr>
+        <tr><td>1</td><td>Receives keyword arguments via <code>**input_data</code></td></tr>
+        <tr><td>2</td><td>Checks each field against its declared type</td></tr>
+        <tr><td>3</td><td>If type doesn't match → tries to coerce (e.g. <code>"10"</code> → <code>10</code>)</td></tr>
+        <tr><td>4</td><td>If coercion fails → raises <code>ValidationError</code></td></tr>
+        <tr><td>5</td><td>Applies default values for missing optional fields</td></tr>
+        <tr><td>6</td><td>Returns a validated model instance</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- TYPE CONVERSION -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-amber">🔄</div>
+        <div class="section-title">Automatic Type Conversion (Coercion)</div>
+        <span class="section-badge">core concept</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="prose">
+        <p>Pydantic doesn't just <em>check</em> types — it <em>converts</em> them when possible. This is called <strong>coercion</strong>.</p>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm"># You pass a string, Pydantic gives you an int</span>
+user = <span class="cls">User</span>(id=<span class="str">"10"</span>, name=<span class="str">"nikita"</span>)
+<span class="fn">print</span>(user.id)  <span class="cm"># 10  ← not "10", it's an integer!</span>
+<span class="fn">print</span>(<span class="fn">type</span>(user.id))  <span class="cm"># &lt;class 'int'&gt;</span></pre>
+      </div>
+      <div class="callout warn">
+        <div class="callout-title">⚠️ Common Mistake</div>
+        Coercion is not unlimited. <span class="inline-code">User(id="hello")</span> will FAIL — Pydantic cannot convert "hello" to an integer. Only logically convertible values work: <span class="inline-code">"10"</span> → <span class="inline-code">10</span>, <span class="inline-code">1</span> → <span class="inline-code">True</span>, etc.
+      </div>
+    </div>
+  </div>
+
+  <!-- INTERVIEW + RECALL -->
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Interview Points &amp; Quick Recall</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions to Nail</div>
+        <ul>
+          <li>What is Pydantic and why is it used over manual validation?</li>
+          <li>What is the difference between validation and coercion?</li>
+          <li>Where is Pydantic most commonly used? (FastAPI, AI/ML, APIs)</li>
+          <li>What happens when Pydantic cannot convert a type?</li>
+          <li>What does <code>BaseModel</code> provide?</li>
+        </ul>
+      </div>
+      <div class="recall-grid">
+        <div class="recall-item"><div class="recall-item-label">Core base class</div><div class="recall-item-val">BaseModel</div></div>
+        <div class="recall-item"><div class="recall-item-label">Wrong type handling</div><div class="recall-item-val">Auto-coerce or ValidationError</div></div>
+        <div class="recall-item"><div class="recall-item-label">Default value syntax</div><div class="recall-item-val">field: type = default</div></div>
+        <div class="recall-item"><div class="recall-item-label">Used heavily in</div><div class="recall-item-val">FastAPI, AI/ML pipelines</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 1 — FIELDS & TYPES
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-1">
+  <div class="topic-hero">
+    <div class="topic-tag">02 — Types</div>
+    <div class="topic-title">Fields &amp; Type Annotations</div>
+    <div class="topic-subtitle">Every variable inside a Pydantic model is a field. Type annotations tell Pydantic what to expect — and enforce it automatically.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">📋</div>
+        <div class="section-title">Common Types Cheat Sheet</div>
+        <span class="section-badge">reference</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <tr><th>Type</th><th>Meaning</th><th>Example Value</th></tr>
+        <tr><td><code>str</code></td><td>String / Text</td><td><code>"hello"</code></td></tr>
+        <tr><td><code>int</code></td><td>Integer</td><td><code>42</code></td></tr>
+        <tr><td><code>float</code></td><td>Decimal</td><td><code>3.14</code></td></tr>
+        <tr><td><code>bool</code></td><td>True / False</td><td><code>True</code></td></tr>
+        <tr><td><code>List[str]</code></td><td>List of strings</td><td><code>["a", "b"]</code></td></tr>
+        <tr><td><code>Dict[str, int]</code></td><td>String keys, int values</td><td><code>{"score": 90}</code></td></tr>
+        <tr><td><code>Optional[str]</code></td><td>String or None</td><td><code>"hello"</code> or <code>None</code></td></tr>
+      </table>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>
+<span class="kw">from</span> typing <span class="kw">import</span> List, Dict, Optional
+
+<span class="kw">class</span> <span class="cls">Product</span>(<span class="cls">BaseModel</span>):
+    name: <span class="cls">str</span>
+    price: <span class="cls">float</span>
+    tags: List[<span class="cls">str</span>]             <span class="cm"># list of strings</span>
+    metadata: Dict[<span class="cls">str</span>, <span class="cls">int</span>]   <span class="cm"># string → int mapping</span>
+    description: Optional[<span class="cls">str</span>] = <span class="kw">None</span>  <span class="cm"># can be None</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-amber">❓</div>
+        <div class="section-title">Optional vs Default — The Confusion</div>
+        <span class="section-badge">common confusion</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="callout info">
+        <div class="callout-title">🧠 Key Mental Model</div>
+        <strong>Optional[str]</strong> = "this can be str or None" (type hint)<br>
+        <strong>= None</strong> = "use None if not provided" (default value)<br>
+        You usually need BOTH together: <span class="inline-code">field: Optional[str] = None</span>
+      </div>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="cm"># These are DIFFERENT:</span>
+name: Optional[<span class="cls">str</span>]         <span class="cm"># type can be str or None, but REQUIRED</span>
+name: Optional[<span class="cls">str</span>] = <span class="kw">None</span>  <span class="cm"># type can be str or None, AND optional</span>
+
+<span class="cm"># Dictionary unpacking to create objects:</span>
+data = {<span class="str">"name"</span>: <span class="str">"nikita"</span>, <span class="str">"age"</span>: <span class="num">20</span>}
+user = <span class="cls">User</span>(**data)  <span class="cm"># ** unpacks dict → keyword args</span></pre>
+      </div>
+      <div class="callout warn">
+        <div class="callout-title">⚠️ Common Mistake — Case Sensitivity</div>
+        <span class="inline-code">Value</span> and <span class="inline-code">value</span> are different in Python! Field names are case-sensitive. <span class="inline-code">User(Name="nikita")</span> is wrong if your field is <span class="inline-code">name</span>.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">30-Second Recall</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="recall-grid">
+        <div class="recall-item"><div class="recall-item-label">Required field</div><div class="recall-item-val">name: str</div></div>
+        <div class="recall-item"><div class="recall-item-label">Optional field</div><div class="recall-item-val">name: Optional[str] = None</div></div>
+        <div class="recall-item"><div class="recall-item-label">With default</div><div class="recall-item-val">active: bool = False</div></div>
+        <div class="recall-item"><div class="recall-item-label">List of items</div><div class="recall-item-val">tags: List[str]</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 2 — FIELD() CONSTRAINTS
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-2">
+  <div class="topic-hero">
+    <div class="topic-tag">03 — Validation</div>
+    <div class="topic-title">Field() Constraints</div>
+    <div class="topic-subtitle">Add rules, boundaries, and metadata to individual fields using the powerful Field() function — the backbone of backend data validation.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">📐</div>
+        <div class="section-title">Field() Constraints Reference</div>
+        <span class="section-badge">cheat sheet</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <tr><th>Constraint</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td><code>...</code></td><td>Field is required</td><td><code>Field(...)</code></td></tr>
+        <tr><td><code>min_length</code></td><td>Minimum characters</td><td><code>min_length=3</code></td></tr>
+        <tr><td><code>max_length</code></td><td>Maximum characters</td><td><code>max_length=30</code></td></tr>
+        <tr><td><code>ge</code></td><td>Greater than or equal</td><td><code>ge=10000</code></td></tr>
+        <tr><td><code>le</code></td><td>Less than or equal</td><td><code>le=100000</code></td></tr>
+        <tr><td><code>pattern</code></td><td>Regex pattern match</td><td><code>pattern=r'^\d{10}$'</code></td></tr>
+        <tr><td><code>description</code></td><td>API docs metadata</td><td><code>description="Name"</code></td></tr>
+        <tr><td><code>example</code></td><td>Sample value</td><td><code>example="Nikita"</code></td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-green">💼</div>
+        <div class="section-title">Complete Employee Model Example</div>
+        <span class="section-badge">real code</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, <span class="cls">Field</span>
+<span class="kw">from</span> typing <span class="kw">import</span> Optional
+
+<span class="kw">class</span> <span class="cls">Employee</span>(<span class="cls">BaseModel</span>):
+
+    name: <span class="cls">str</span> = <span class="cls">Field</span>(
+        ...,                    <span class="cm"># required</span>
+        min_length=<span class="num">3</span>,
+        max_length=<span class="num">30</span>,
+        description=<span class="str">"Employee Name"</span>,
+        example=<span class="str">"Nikita"</span>
+    )
+
+    dept: Optional[<span class="cls">str</span>] = <span class="str">"General"</span>  <span class="cm"># optional with default</span>
+
+    salary: <span class="cls">int</span> = <span class="cls">Field</span>(
+        ...,
+        ge=<span class="num">10000</span>,         <span class="cm"># must be ≥ 10,000</span>
+        le=<span class="num">1000000</span>        <span class="cm"># must be ≤ 10,00,000</span>
+    )
+
+    phone: <span class="cls">str</span> = <span class="cls">Field</span>(
+        ...,
+        pattern=<span class="str">r'^\d{10}$'</span>  <span class="cm"># exactly 10 digits</span>
+    )
+
+<span class="cm"># Valid:</span>
+e = <span class="cls">Employee</span>(name=<span class="str">"Nikita"</span>, salary=<span class="num">50000</span>, phone=<span class="str">"9876543210"</span>)
+
+<span class="cm"># Invalid — raises ValidationError:</span>
+<span class="cls">Employee</span>(name=<span class="str">"ab"</span>, salary=<span class="num">5000</span>, phone=<span class="str">"123"</span>)</pre>
+      </div>
+      <div class="callout tip">
+        <div class="callout-title">💡 Why ... (Ellipsis)?</div>
+        The three dots <span class="inline-code">...</span> is Python's "Ellipsis" object. In Pydantic's <span class="inline-code">Field(...)</span>, it signals "this field is required — no default value". It's Pydantic's convention, not standard Python.
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Interview Points</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions</div>
+        <ul>
+          <li>What does <code>Field(...)</code> mean vs <code>Field(default=None)</code>?</li>
+          <li>How do you validate a phone number format in Pydantic?</li>
+          <li>What's the difference between <code>ge</code> and <code>gt</code>?</li>
+          <li>How does Field() help in FastAPI documentation?</li>
+          <li>Can you add both <code>min_length</code> and <code>pattern</code> to the same field?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 3 — VALIDATORS
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-3">
+  <div class="topic-hero">
+    <div class="topic-tag">04 — Custom Logic</div>
+    <div class="topic-title">Validators</div>
+    <div class="topic-subtitle">When built-in constraints aren't enough, write custom validation logic using @field_validator and @model_validator decorators.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">🔍</div>
+        <div class="section-title">Validator Types Overview</div>
+        <span class="section-badge">foundation</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <tr><th>Validator</th><th>Scope</th><th>Best For</th></tr>
+        <tr><td><code>@field_validator</code></td><td>One or multiple specific fields</td><td>Username length, email format, price parsing</td></tr>
+        <tr><td><code>@model_validator</code></td><td>Entire model (all fields)</td><td>Password matching, date range checks, business rules</td></tr>
+      </table>
+      <div class="flow">
+        <div class="flow-step">Input</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Type Validation</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">@field_validator</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">@model_validator</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Object ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-green">🧪</div>
+        <div class="section-title">field_validator — 3 Real Examples</div>
+        <span class="section-badge">code deep dive</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <h3 class="sub">Example 1 — Name Capitalization</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, field_validator
+
+<span class="kw">class</span> <span class="cls">Person</span>(<span class="cls">BaseModel</span>):
+    f_name: <span class="cls">str</span>
+    l_name: <span class="cls">str</span>
+
+    <span class="dec">@field_validator</span>(<span class="str">'f_name'</span>, <span class="str">'l_name'</span>)  <span class="cm"># field names as STRINGS!</span>
+    <span class="kw">def</span> <span class="fn">must_be_capitalized</span>(cls, v):
+        <span class="kw">if not</span> v.istitle():
+            <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"name must start with capital"</span>)
+        <span class="kw">return</span> v  <span class="cm"># ALWAYS return v!</span>
+
+<span class="cm"># Valid: Person(f_name="Nikita", l_name="Pandey")</span>
+<span class="cm"># Invalid: Person(f_name="nikita", ...)</span></pre>
+      </div>
+
+      <h3 class="sub">Example 2 — Email Normalization (Transform Data)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">class</span> <span class="cls">User</span>(<span class="cls">BaseModel</span>):
+    email: <span class="cls">str</span>
+
+    <span class="dec">@field_validator</span>(<span class="str">'email'</span>)
+    <span class="kw">def</span> <span class="fn">normalize_email</span>(cls, v):
+        <span class="kw">return</span> v.lower().strip()
+        <span class="cm"># "  Nikita@GMAIL.COM " → "nikita@gmail.com"</span>
+
+<span class="cm"># Validators can TRANSFORM data, not just validate!</span></pre>
+      </div>
+
+      <h3 class="sub">Example 3 — Price Parsing (Type Conversion)</h3>
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">class</span> <span class="cls">Product</span>(<span class="cls">BaseModel</span>):
+    price: <span class="cls">str</span>
+
+    <span class="dec">@field_validator</span>(<span class="str">'price'</span>)
+    <span class="kw">def</span> <span class="fn">parse_price</span>(cls, v):
+        <span class="kw">if isinstance</span>(v, <span class="cls">str</span>):
+            <span class="kw">return float</span>(v.replace(<span class="str">'$'</span>, <span class="str">''</span>).replace(<span class="str">','</span>, <span class="str">''</span>))
+        <span class="kw">return</span> v
+        <span class="cm"># "$10,000" → 10000.0</span></pre>
+      </div>
+      <div class="callout danger">
+        <div class="callout-title">🚨 Critical Rule — ALWAYS return v</div>
+        If you forget <span class="inline-code">return v</span>, Python returns <span class="inline-code">None</span> implicitly. Pydantic then stores <span class="inline-code">None</span> as the field value. This is a silent bug — no error, just wrong data!
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-blue">🔗</div>
+        <div class="section-title">model_validator — Cross-Field Logic</div>
+        <span class="section-badge">advanced</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, model_validator
+
+<span class="kw">class</span> <span class="cls">Passwd</span>(<span class="cls">BaseModel</span>):
+    curr_pswd: <span class="cls">str</span>
+    knw_passwd: <span class="cls">str</span>
+
+    <span class="dec">@model_validator</span>(mode=<span class="str">'after'</span>)  <span class="cm"># runs AFTER all fields validated</span>
+    <span class="kw">def</span> <span class="fn">check_passwords_match</span>(cls, values):
+        <span class="kw">if</span> values.curr_pswd != values.knw_passwd:
+            <span class="kw">raise</span> <span class="cls">ValueError</span>(<span class="str">"passwords do not match"</span>)
+        <span class="kw">return</span> values  <span class="cm"># return the full model, not a single field!</span>
+
+<span class="cm"># mode='before' → runs before field validation</span>
+<span class="cm"># mode='after'  → runs after all fields validated (most common)</span></pre>
+      </div>
+      <table class="data-table">
+        <tr><th>Parameter</th><th>Meaning</th></tr>
+        <tr><td><code>cls</code></td><td>The class itself (like self for class methods)</td></tr>
+        <tr><td><code>values</code> (in model_validator)</td><td>The entire model object with all fields</td></tr>
+        <tr><td><code>v</code> (in field_validator)</td><td>The single field's value</td></tr>
+        <tr><td><code>mode='after'</code></td><td>Run validator after type checking is done</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Common Mistakes + Interview</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="callout danger">
+        <div class="callout-title">🚨 Bug — Field names without quotes</div>
+        <span class="inline-code">@field_validator(f_name)</span> → WRONG (Python looks for variable named f_name)<br>
+        <span class="inline-code">@field_validator('f_name')</span> → CORRECT (string name of the field)
+      </div>
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions</div>
+        <ul>
+          <li>What's the difference between <code>@field_validator</code> and <code>@model_validator</code>?</li>
+          <li>What happens if a field_validator doesn't return a value?</li>
+          <li>When would you use <code>mode='before'</code>?</li>
+          <li>Can a validator transform (not just validate) data?</li>
+          <li>How do you validate that two passwords match?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 4 — COMPUTED FIELDS
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-4">
+  <div class="topic-hero">
+    <div class="topic-tag">05 — Dynamic Fields</div>
+    <div class="topic-title">Computed Fields</div>
+    <div class="topic-subtitle">Generate field values dynamically from other fields — and include them in serialized output — without storing them manually.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-green">🧮</div>
+        <div class="section-title">Hotel Billing Example</div>
+        <span class="section-badge">full example</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, computed_field
+
+<span class="kw">class</span> <span class="cls">Hotel</span>(<span class="cls">BaseModel</span>):
+    name: <span class="cls">str</span>
+    night: <span class="cls">int</span>
+    price: <span class="cls">int</span>
+
+    <span class="dec">@computed_field</span>         <span class="cm"># include in model_dump()</span>
+    <span class="dec">@property</span>               <span class="cm"># access like attribute, not method call</span>
+    <span class="kw">def</span> <span class="fn">total_price</span>(self) -> <span class="cls">float</span>:
+        <span class="kw">return</span> self.night * self.price
+
+user = <span class="cls">Hotel</span>(name=<span class="str">"Nikita"</span>, night=<span class="num">3</span>, price=<span class="num">10000</span>)
+
+<span class="fn">print</span>(user.total_price)    <span class="cm"># 30000</span>
+<span class="fn">print</span>(user.model_dump())   <span class="cm"># includes 'total_price': 30000</span></pre>
+      </div>
+      <div class="flow">
+        <div class="flow-step">night = 3</div>
+        <div class="flow-arrow">×</div>
+        <div class="flow-step">price = 10000</div>
+        <div class="flow-arrow">=</div>
+        <div class="flow-step">total_price = 30000</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-amber">❓</div>
+        <div class="section-title">Why Two Decorators? @computed_field + @property</div>
+        <span class="section-badge">deep explanation</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <tr><th>Decorator</th><th>What It Does</th><th>Without It</th></tr>
+        <tr><td><code>@property</code></td><td>Access method like <code>user.total_price</code> (no parentheses)</td><td>Must call as <code>user.total_price()</code></td></tr>
+        <tr><td><code>@computed_field</code></td><td>Include computed value in <code>model_dump()</code> and JSON output</td><td>Property works but is invisible in serialization</td></tr>
+      </table>
+      <div class="callout tip">
+        <div class="callout-title">💡 Key Insight — Not Stored</div>
+        The computed field is calculated fresh every time it's accessed. It's NOT stored in the model. This means: no duplicate data, always up-to-date, but computed on each access.
+      </div>
+      <table class="data-table">
+        <tr><th>Normal Field</th><th>Computed Field</th></tr>
+        <tr><td>User provides value</td><td>Calculated from other fields</td></tr>
+        <tr><td>Stored in model</td><td>Generated dynamically</td></tr>
+        <tr><td>Static</td><td>Always fresh</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Real Use Cases + Interview</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="recall-grid">
+        <div class="recall-item"><div class="recall-item-label">Use case 1</div><div class="recall-item-val">Total cart amount</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 2</div><div class="recall-item-val">Age from birth year</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 3</div><div class="recall-item-val">Discounted price</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 4</div><div class="recall-item-val">Salary after tax</div></div>
+      </div>
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions</div>
+        <ul>
+          <li>What is a computed field in Pydantic? How does it differ from a normal field?</li>
+          <li>Why do you need both <code>@computed_field</code> and <code>@property</code>?</li>
+          <li>Is a computed field stored in the model? (No — calculated dynamically)</li>
+          <li>Does <code>model_dump()</code> include computed fields by default?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 5 — NESTED MODELS
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-5">
+  <div class="topic-hero">
+    <div class="topic-tag">06 — Structure</div>
+    <div class="topic-title">Nested Models</div>
+    <div class="topic-subtitle">Models inside models — perfect for complex real-world data like users with addresses, orders with items, and APIs with structured bodies.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-blue">🏠</div>
+        <div class="section-title">User with Address Example</div>
+        <span class="section-badge">full example</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>
+
+<span class="kw">class</span> <span class="cls">Address</span>(<span class="cls">BaseModel</span>):
+    street: <span class="cls">str</span>
+    pst: <span class="cls">str</span>
+    state: <span class="cls">str</span>
+
+<span class="kw">class</span> <span class="cls">User</span>(<span class="cls">BaseModel</span>):
+    name: <span class="cls">str</span>
+    phone: <span class="cls">int</span>
+    adr: <span class="cls">Address</span>   <span class="cm"># nested model</span>
+
+<span class="cm"># Method 1: Pass an Address object directly</span>
+adrs = <span class="cls">Address</span>(street=<span class="str">"value1"</span>, pst=<span class="str">"7887"</span>, state=<span class="str">"up"</span>)
+user1 = <span class="cls">User</span>(name=<span class="str">"nikita"</span>, phone=<span class="num">788778</span>, adr=adrs)
+
+<span class="cm"># Method 2: Pass a plain dict — Pydantic auto-converts it!</span>
+user_data = {
+    <span class="str">'name'</span>: <span class="str">'nikita'</span>, <span class="str">'phone'</span>: <span class="str">'45343'</span>,  <span class="cm"># phone as string → auto-converts</span>
+    <span class="str">'adr'</span>: {<span class="str">'street'</span>: <span class="str">'effe'</span>, <span class="str">'pst'</span>: <span class="str">'frwf'</span>, <span class="str">'state'</span>: <span class="str">'hu'</span>}
+}
+user2 = <span class="cls">User</span>(**user_data)  <span class="cm"># dict auto-becomes Address object!</span></pre>
+      </div>
+      <div class="callout tip">
+        <div class="callout-title">💡 Superpower — Automatic Nested Parsing</div>
+        You don't need to manually create <span class="inline-code">Address(...)</span> for user2. Pydantic sees the dict, sees the field type is <span class="inline-code">Address</span>, and converts the dict automatically. This is extremely useful when parsing JSON API responses!
+      </div>
+      <div class="flow">
+        <div class="flow-step">Dict input</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Pydantic sees adr: Address</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Auto-creates Address object</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">User created ✓</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Why This Matters — Real World</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="prose">
+        <p>In real APIs, your frontend sends JSON. That JSON has nested objects. Pydantic automatically parses that entire nested structure — no manual unpacking needed.</p>
+      </div>
+      <div class="callout info">
+        <div class="callout-title">📡 Real API Body</div>
+        <code>{"name": "nikita", "phone": "45343", "adr": {"street": "effe", ...}}</code> → Pydantic parses this entirely with just <span class="inline-code">User(**request.json())</span>
+      </div>
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions</div>
+        <ul>
+          <li>How does Pydantic handle nested model validation?</li>
+          <li>Can you pass a plain dict where a nested model is expected? (Yes!)</li>
+          <li>What happens to string <code>"45343"</code> for an <code>int</code> field?</li>
+          <li>Why are nested models useful in FastAPI request bodies?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 6 — SELF-REFERENCING
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-6">
+  <div class="topic-hero">
+    <div class="topic-tag">07 — Recursive</div>
+    <div class="topic-title">Self-Referencing Models</div>
+    <div class="topic-subtitle">A model that contains instances of itself — perfect for tree structures, comment threads, file systems, and organization hierarchies.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">💬</div>
+        <div class="section-title">Comment System Example</div>
+        <span class="section-badge">full example</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>
+<span class="kw">from</span> typing <span class="kw">import</span> List, Optional
+
+<span class="kw">class</span> <span class="cls">Comment</span>(<span class="cls">BaseModel</span>):
+    id: <span class="cls">int</span>
+    content: <span class="cls">str</span>
+    reply: Optional[List[<span class="str">"Comment"</span>]] = <span class="kw">None</span>  <span class="cm"># "Comment" in quotes!</span>
+
+<span class="cls">Comment</span>.model_rebuild()  <span class="cm"># REQUIRED for self-referencing models</span>
+
+comment = <span class="cls">Comment</span>(
+    id=<span class="num">1</span>,
+    content=<span class="str">"this is hilarious"</span>,
+    reply=[
+        <span class="cls">Comment</span>(id=<span class="num">2</span>, content=<span class="str">"wow u must be amazing"</span>),
+        <span class="cls">Comment</span>(id=<span class="num">3</span>, content=<span class="str">"no u are"</span>),
+        <span class="cls">Comment</span>(id=<span class="num">4</span>, content=<span class="str">"bye"</span>, reply=[])
+    ]
+)</pre>
+      </div>
+      <div class="flow">
+        <div class="flow-step">Comment(id=1)</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">reply: [Comment, Comment, Comment]</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">each can have reply: [Comment...]</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-amber">❓</div>
+        <div class="section-title">Why Quotes? Forward References Explained</div>
+        <span class="section-badge">deep explanation</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="callout info">
+        <div class="callout-title">🧠 Why "Comment" in Quotes?</div>
+        When Python is reading the class definition of <strong>Comment</strong>, it hasn't finished defining it yet. If you write <span class="inline-code">List[Comment]</span>, Python tries to resolve <span class="inline-code">Comment</span> immediately — but it doesn't exist yet! Writing <span class="inline-code">List["Comment"]</span> as a string tells Python: "I'll resolve this later." This is called a <strong>Forward Reference</strong>.
+      </div>
+      <div class="callout info">
+        <div class="callout-title">🧠 Why model_rebuild()?</div>
+        After the class is fully defined, <span class="inline-code">model_rebuild()</span> tells Pydantic: "Now go resolve those forward reference strings into actual types." Without it, Pydantic may not correctly understand the recursive structure.
+      </div>
+      <table class="data-table">
+        <tr><th>Value</th><th>Meaning</th></tr>
+        <tr><td><code>reply = None</code></td><td>No replies field provided at all</td></tr>
+        <tr><td><code>reply = []</code></td><td>Field exists but is an empty list</td></tr>
+        <tr><td><code>reply = [Comment(...)]</code></td><td>Has actual replies</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Real Use Cases + Interview</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="recall-grid">
+        <div class="recall-item"><div class="recall-item-label">Use case 1</div><div class="recall-item-val">Social media comment threads</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 2</div><div class="recall-item-val">File system (folder → folder)</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 3</div><div class="recall-item-val">Org hierarchy (Manager → Employee)</div></div>
+        <div class="recall-item"><div class="recall-item-label">Use case 4</div><div class="recall-item-val">Category → Subcategory trees</div></div>
+      </div>
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Interview Questions</div>
+        <ul>
+          <li>What is a self-referencing model? Give an example.</li>
+          <li>Why do we use forward references (string type hints)?</li>
+          <li>What does <code>model_rebuild()</code> do?</li>
+          <li>What's the difference between <code>None</code> and <code>[]</code> for the reply field?</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<!-- ═══════════════════════════════════════════════════════
+     TOPIC 7 — SERIALIZATION
+═══════════════════════════════════════════════════════ -->
+<div class="topic" id="topic-7">
+  <div class="topic-hero">
+    <div class="topic-tag">08 — Output</div>
+    <div class="topic-title">Serialization</div>
+    <div class="topic-subtitle">Convert Pydantic models to dictionaries and JSON — the last mile before sending data to APIs, databases, or frontend clients.</div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-purple">📤</div>
+        <div class="section-title">model_dump() vs model_dump_json()</div>
+        <span class="section-badge">core methods</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <table class="data-table">
+        <tr><th>Method</th><th>Output Type</th><th>Use When</th></tr>
+        <tr><td><code>model_dump()</code></td><td>Python dictionary</td><td>Working in Python, storing to DB</td></tr>
+        <tr><td><code>model_dump_json()</code></td><td>JSON string</td><td>Sending over HTTP, APIs, files</td></tr>
+        <tr><td><code>print(model)</code></td><td>Pydantic repr string</td><td>Debugging only</td></tr>
+      </table>
+      <table class="data-table">
+        <tr><th>Python</th><th>In JSON</th></tr>
+        <tr><td><code>True</code></td><td><code>true</code></td></tr>
+        <tr><td><code>None</code></td><td><code>null</code></td></tr>
+        <tr><td><code>'text'</code></td><td><code>"text"</code></td></tr>
+        <tr><td><code>datetime object</code></td><td>string (custom format)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card open">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-green">⚙️</div>
+        <div class="section-title">Custom Datetime Formatting with ConfigDict</div>
+        <span class="section-badge">advanced</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="code-wrap">
+        <div class="code-header"><span class="code-lang">Python</span><button class="code-copy" onclick="copyCode(this)">copy</button></div>
+        <pre><span class="kw">from</span> pydantic <span class="kw">import</span> <span class="cls">BaseModel</span>, <span class="cls">ConfigDict</span>
+<span class="kw">from</span> datetime <span class="kw">import</span> datetime
+
+<span class="kw">class</span> <span class="cls">User</span>(<span class="cls">BaseModel</span>):
+    name: <span class="cls">str</span>
+    createdAt: datetime
+
+    model_config = <span class="cls">ConfigDict</span>(
+        json_encoders={
+            datetime: <span class="kw">lambda</span> v: v.strftime(<span class="str">'%d-%m-%Y %H:%M:%S'</span>)
+            <span class="cm"># datetime object → "03-04-2024 02:13:02"</span>
+        }
+    )
+
+user = <span class="cls">User</span>(name=<span class="str">"nikita"</span>, createdAt=datetime(<span class="num">2024</span>,<span class="num">4</span>,<span class="num">3</span>,<span class="num">2</span>,<span class="num">13</span>,<span class="num">2</span>))
+<span class="fn">print</span>(user.model_dump_json())
+<span class="cm"># {"name":"nikita","createdAt":"03-04-2024 02:13:02"}</span></pre>
+      </div>
+      <div class="callout danger">
+        <div class="callout-title">🚨 Bug Nikita Made — Dollar vs Percent</div>
+        <span class="inline-code">v.strftime('%d-%m-%Y %H:%M:$S')</span> ← WRONG (<span class="inline-code">$S</span> is not Python!)<br>
+        <span class="inline-code">v.strftime('%d-%m-%Y %H:%M:%S')</span> ← CORRECT (always use <span class="inline-code">%</span>)
+      </div>
+      <h4 class="mini">strftime Format Reference</h4>
+      <table class="data-table">
+        <tr><th>Symbol</th><th>Meaning</th><th>Example</th></tr>
+        <tr><td><code>%d</code></td><td>Day</td><td>03</td></tr>
+        <tr><td><code>%m</code></td><td>Month</td><td>04</td></tr>
+        <tr><td><code>%Y</code></td><td>Year (4-digit)</td><td>2024</td></tr>
+        <tr><td><code>%H</code></td><td>Hour (24h)</td><td>14</td></tr>
+        <tr><td><code>%M</code></td><td>Minute</td><td>30</td></tr>
+        <tr><td><code>%S</code></td><td>Second</td><td>05</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="section-card">
+    <div class="section-header" onclick="toggleSection(this)">
+      <div class="section-header-left">
+        <div class="section-icon icon-red">🎯</div>
+        <div class="section-title">Master Summary + Interview</div>
+        <span class="section-badge">exam prep</span>
+      </div>
+      <span class="section-toggle">▾</span>
+    </div>
+    <div class="section-body">
+      <div class="callout tip">
+        <div class="callout-title">🧠 Complete Pydantic Mental Model</div>
+        Pydantic is your data pipeline bouncer:<br>
+        <strong>Input →</strong> validate types → run field validators → run model validators → <strong>clean object</strong><br>
+        <strong>Output →</strong> model_dump() (Python dict) or model_dump_json() (JSON string)
+      </div>
+      <div class="interview-box">
+        <div class="interview-box-title">🎙 Serialization Interview Questions</div>
+        <ul>
+          <li>What is the difference between <code>model_dump()</code> and <code>model_dump_json()</code>?</li>
+          <li>How do you customize how datetime is serialized in Pydantic?</li>
+          <li>What is <code>ConfigDict</code> used for?</li>
+          <li>Does <code>model_dump()</code> include nested models? (Yes, recursively!)</li>
+          <li>What is <code>json_encoders</code> in Pydantic?</li>
+        </ul>
+      </div>
+      <div class="summary-strip">
+        <div class="summary-pill"><strong>model_dump()</strong> → Python dict</div>
+        <div class="summary-pill"><strong>model_dump_json()</strong> → JSON string</div>
+        <div class="summary-pill"><strong>ConfigDict</strong> → model config</div>
+        <div class="summary-pill"><strong>json_encoders</strong> → custom types</div>
+        <div class="summary-pill"><strong>strftime()</strong> → datetime format</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+  </div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const slugs = ['pydantic-basics','fields-types','field-constraints','validators','computed-fields','nested-models','self-referencing','serialization'];
+let current = 0;
+
+function showTopic(index, btn) {
+  document.querySelectorAll('.topic').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('topic-' + index).classList.add('active');
+  btn.classList.add('active');
+  current = index;
+  document.getElementById('breadcrumb').textContent = slugs[index];
+  const pct = Math.round(((index + 1) / 8) * 100);
+  document.getElementById('prog-fill').style.width = pct + '%';
+  document.getElementById('prog-label').textContent = (index + 1) + ' / 8';
+  document.getElementById('sidebar').classList.remove('open');
+  window.scrollTo({top: 0, behavior: 'smooth'});
+}
+
+function toggleSection(header) {
+  const card = header.parentElement;
+  card.classList.toggle('open');
+}
+
+function collapseAll() {
+  document.querySelectorAll('.section-card').forEach(c => c.classList.remove('open'));
+}
+
+function expandAll() {
+  document.querySelectorAll('.section-card').forEach(c => c.classList.add('open'));
+}
+
+function copyCode(btn) {
+  const pre = btn.closest('.code-wrap').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'copied!';
+    setTimeout(() => btn.textContent = 'copy', 1500);
+  });
+}
+
+// Keyboard navigation
+document.addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+  if (e.key === 'ArrowRight' && current < 7) {
+    const navItems = document.querySelectorAll('.nav-item');
+    showTopic(current + 1, navItems[current + 1]);
+  }
+  if (e.key === 'ArrowLeft' && current > 0) {
+    const navItems = document.querySelectorAll('.nav-item');
+    showTopic(current - 1, navItems[current - 1]);
+  }
+});
+</script>
+</body>
+</html>
