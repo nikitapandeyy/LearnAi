@@ -175,3 +175,58 @@ class Solution:
 
 * **Q: How does the map prevent duplicate node clones when multi-connected nodes appear?**
 * *A:* "The hash map acts as a source of truth. If Node A and Node B both share an edge with Node C, the first node to discover Node C will allocate it in `clones`. When the second node encounters it, the lookup condition `if neighbor not in clones` evaluates to `False`, preventing a redundant object instantiation."
+
+
+
+
+Here is the logic translated into pseudocode.
+
+As mentioned in the approach, we only need to keep track of two values at any given time: the maximum loot we could get up to the **previous** house, and the maximum loot up to **two houses ago**.
+
+### Space-Optimized Pseudocode
+
+```text
+FUNCTION rob(houses):
+    // Edge case: If there are no houses, there is nothing to rob
+    IF houses is empty THEN
+        RETURN 0
+    END IF
+
+    // Edge case: If there is only one house, rob it
+    IF length of houses EQUALS 1 THEN
+        RETURN houses[0]
+    END IF
+
+    // Track the maximum loot up to 2 steps ago and 1 step ago
+    // Initially, standing before the first two houses
+    loot_two_steps_ago = 0
+    loot_one_step_ago = 0
+
+    // Walk through each house on the street
+    FOR EACH house_cash IN houses:
+        // Option 1: Rob current house + loot from 2 houses ago
+        // Option 2: Skip current house and keep loot from 1 house ago
+        current_max = MAXIMUM(house_cash + loot_two_steps_ago, loot_one_step_ago)
+
+        // Slide our two trackers forward for the next iteration
+        loot_two_steps_ago = loot_one_step_ago
+        loot_one_step_ago = current_max
+    END FOR
+
+    // The tracker for 1 step ago now holds the total maximum loot possible
+    RETURN loot_one_step_ago
+END FUNCTION
+
+```
+
+### Dry Run Example
+
+If the houses have money `[2, 7, 9, 3, 1]`:
+
+* **House 2:** `MAX(2 + 0, 0)` $\rightarrow$ `current_max` = 2. Update variables: `two_steps` = 0, `one_step` = 2.
+* **House 7:** `MAX(7 + 0, 2)` $\rightarrow$ `current_max` = 7. Update variables: `two_steps` = 2, `one_step` = 7.
+* **House 9:** `MAX(9 + 2, 7)` $\rightarrow$ `current_max` = 11. Update variables: `two_steps` = 7, `one_step` = 11.
+* **House 3:** `MAX(3 + 7, 11)` $\rightarrow$ `current_max` = 11. Update variables: `two_steps` = 11, `one_step` = 11.
+* **House 1:** `MAX(1 + 11, 11)` $\rightarrow$ `current_max` = 12. Update variables: `two_steps` = 11, `one_step` = 12.
+
+**Final Return:** 12 (Robbing house 2, 9, and 1).
